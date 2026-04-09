@@ -21,7 +21,7 @@ app.use(cors({ origin: '*' }));       // allow frontend on any port
 app.use(express.json());
 
 // ── DB Setup ─────────────────────────────────────────────
-const DB_PATH  = path.join(__dirname, 'schemes.db');
+const DB_PATH  = process.env.DB_PATH || path.join(__dirname, 'schemes.db');
 const SQL_PATH = path.join(__dirname, 'database.sql');
 
 const db = new Database(DB_PATH);
