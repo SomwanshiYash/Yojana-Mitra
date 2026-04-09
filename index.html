@@ -1,0 +1,1006 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Yojana Mitra — Scheme Eligibility Checker</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;1,9..40,300&display=swap" rel="stylesheet" />
+
+<style>
+/* ── Reset & Variables ───────────────────────────────── */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+    --ink:      #0a0a0f;
+    --paper:    #f5f2eb;
+    --cream:    #ede9df;
+    --saffron:  #e87722;
+    --gold:     #c9a84c;
+    --teal:     #1a6b5e;
+    --teal-lt:  #e8f3f1;
+    --red:      #c0392b;
+    --red-lt:   #fdf0ef;
+    --muted:    #6b6760;
+    --border:   #d8d3c8;
+    --font-display: 'Syne', sans-serif;
+    --font-body:    'DM Sans', sans-serif;
+    --radius:   12px;
+    --shadow:   0 4px 24px rgba(10,10,15,.08);
+}
+
+html { scroll-behavior: smooth; }
+
+body {
+    font-family: var(--font-body);
+    background: var(--paper);
+    color: var(--ink);
+    min-height: 100vh;
+    line-height: 1.6;
+}
+
+/* ── Noise Texture Overlay ───────────────────────────── */
+body::before {
+    content: '';
+    position: fixed; inset: 0;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='.03'/%3E%3C/svg%3E");
+    pointer-events: none;
+    z-index: 0;
+}
+
+/* ── Header ──────────────────────────────────────────── */
+header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 1.25rem 2.5rem;
+    background: var(--ink);
+    position: sticky; top: 0; z-index: 100;
+}
+
+.logo {
+    font-family: var(--font-display);
+    font-size: 1.4rem;
+    font-weight: 800;
+    color: #fff;
+    letter-spacing: -.02em;
+}
+
+.logo span { color: var(--saffron); }
+
+.header-tag {
+    font-size: .75rem;
+    font-weight: 500;
+    color: var(--gold);
+    letter-spacing: .12em;
+    text-transform: uppercase;
+}
+
+/* ── Hero ────────────────────────────────────────────── */
+.hero {
+    background: var(--ink);
+    color: #fff;
+    padding: 5rem 2.5rem 4rem;
+    position: relative;
+    overflow: hidden;
+}
+
+.hero::after {
+    content: 'योजना';
+    position: absolute;
+    right: -1rem; bottom: -2rem;
+    font-family: var(--font-display);
+    font-size: 12rem;
+    font-weight: 800;
+    color: rgba(255,255,255,.04);
+    pointer-events: none;
+    line-height: 1;
+}
+
+.hero-inner { max-width: 720px; }
+
+.hero-tag {
+    display: inline-block;
+    background: rgba(232,119,34,.15);
+    color: var(--saffron);
+    font-size: .75rem;
+    font-weight: 600;
+    letter-spacing: .1em;
+    text-transform: uppercase;
+    padding: .35rem .8rem;
+    border-radius: 99px;
+    margin-bottom: 1.25rem;
+    border: 1px solid rgba(232,119,34,.3);
+}
+
+.hero h1 {
+    font-family: var(--font-display);
+    font-size: clamp(2rem, 5vw, 3.5rem);
+    font-weight: 800;
+    line-height: 1.1;
+    letter-spacing: -.03em;
+    margin-bottom: 1rem;
+}
+
+.hero h1 em {
+    font-style: normal;
+    color: var(--saffron);
+}
+
+.hero p {
+    color: rgba(255,255,255,.6);
+    font-size: 1.05rem;
+    max-width: 540px;
+}
+
+/* ── Layout ──────────────────────────────────────────── */
+.main-wrap {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 3rem 2rem 6rem;
+    display: grid;
+    grid-template-columns: 420px 1fr;
+    gap: 2rem;
+    align-items: start;
+    position: relative; z-index: 1;
+}
+
+@media (max-width: 860px) {
+    .main-wrap { grid-template-columns: 1fr; }
+    header { padding: 1rem 1.25rem; }
+    .hero  { padding: 3rem 1.25rem 2.5rem; }
+    .hero::after { display: none; }
+}
+
+/* ── Form Card ───────────────────────────────────────── */
+.form-card {
+    background: #fff;
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    overflow: hidden;
+    position: sticky; top: 80px;
+}
+
+.form-card-header {
+    background: linear-gradient(135deg, var(--teal), #0d4f44);
+    padding: 1.5rem 1.75rem;
+    color: #fff;
+}
+
+.form-card-header h2 {
+    font-family: var(--font-display);
+    font-size: 1.15rem;
+    font-weight: 700;
+    letter-spacing: -.01em;
+}
+
+.form-card-header p {
+    font-size: .85rem;
+    color: rgba(255,255,255,.7);
+    margin-top: .25rem;
+}
+
+.form-body { padding: 1.75rem; display: flex; flex-direction: column; gap: 1.1rem; }
+
+label {
+    display: block;
+    font-size: .8rem;
+    font-weight: 500;
+    color: var(--muted);
+    letter-spacing: .04em;
+    text-transform: uppercase;
+    margin-bottom: .4rem;
+}
+
+input, select {
+    width: 100%;
+    padding: .7rem 1rem;
+    border: 1.5px solid var(--border);
+    border-radius: 8px;
+    font-family: var(--font-body);
+    font-size: .95rem;
+    color: var(--ink);
+    background: var(--paper);
+    transition: border-color .2s, box-shadow .2s;
+    outline: none;
+    appearance: none;
+}
+
+input:focus, select:focus {
+    border-color: var(--teal);
+    box-shadow: 0 0 0 3px rgba(26,107,94,.12);
+    background: #fff;
+}
+
+/* ── Custom Select ───────────────────────────────────── */
+.custom-select-wrapper {
+    position: relative;
+    user-select: none;
+    width: 100%;
+}
+.custom-select-wrapper select {
+    display: none;
+}
+.custom-select-trigger {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+    padding: .7rem 1rem;
+    border: 1.5px solid var(--border);
+    border-radius: 8px;
+    font-family: var(--font-body);
+    font-size: .95rem;
+    color: var(--muted);
+    background: var(--paper);
+    cursor: pointer;
+    transition: border-color .2s, box-shadow .2s;
+}
+.custom-select-trigger.has-value {
+    color: var(--ink);
+}
+.custom-select-wrapper.open .custom-select-trigger {
+    border-color: var(--teal);
+    box-shadow: 0 0 0 3px rgba(26,107,94,.12);
+    background: #fff;
+    border-bottom-left-radius: 0;
+    border-bottom-right-radius: 0;
+}
+.custom-options {
+    position: absolute;
+    display: block;
+    top: 100%;
+    left: 0;
+    right: 0;
+    background: #fff;
+    border: 1.5px solid var(--teal);
+    border-top: none;
+    border-bottom-left-radius: 8px;
+    border-bottom-right-radius: 8px;
+    box-shadow: 0 4px 12px rgba(10,10,15,.08);
+    z-index: 10;
+    max-height: 250px;
+    overflow-y: auto;
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(-5px);
+    transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.custom-select-wrapper.open .custom-options {
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(0);
+}
+.custom-options::-webkit-scrollbar {
+    width: 6px;
+}
+.custom-options::-webkit-scrollbar-track {
+    background: transparent;
+}
+.custom-options::-webkit-scrollbar-thumb {
+    background: #d0c8b6;
+    border-radius: 10px;
+}
+.custom-option {
+    padding: .7rem 1rem;
+    display: block;
+    cursor: pointer;
+    font-size: .95rem;
+    color: var(--ink);
+    transition: background 0.15s, color 0.15s;
+    border-bottom: 1px solid rgba(0,0,0,0.03);
+}
+.custom-option:last-child {
+    border-bottom: none;
+}
+.custom-option:hover {
+    background: var(--teal-lt);
+    color: var(--teal);
+}
+.custom-option.selected {
+    font-weight: 600;
+    background: rgba(26,107,94,.05);
+    color: var(--teal);
+}
+.custom-arrow {
+    width: 8px;
+    height: 8px;
+    border-right: 2px solid var(--muted);
+    border-bottom: 2px solid var(--muted);
+    transform: rotate(45deg);
+    transition: transform 0.3s;
+    margin-bottom: 4px;
+}
+.custom-select-wrapper.open .custom-arrow {
+    transform: rotate(225deg);
+    margin-top: 4px;
+    margin-bottom: 0;
+}
+
+.input-row { display: grid; grid-template-columns: 1fr 1fr; gap: .75rem; }
+
+.submit-btn {
+    width: 100%;
+    padding: .85rem;
+    background: var(--saffron);
+    color: #fff;
+    font-family: var(--font-display);
+    font-size: 1rem;
+    font-weight: 700;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    letter-spacing: .01em;
+    transition: background .2s, transform .1s;
+    margin-top: .25rem;
+    display: flex; align-items: center; justify-content: center; gap: .5rem;
+}
+
+.submit-btn:hover  { background: #d06515; }
+.submit-btn:active { transform: scale(.98); }
+.submit-btn:disabled { background: #c4b9aa; cursor: not-allowed; }
+
+/* ── Results Panel ───────────────────────────────────── */
+.results-panel { display: flex; flex-direction: column; gap: 1.5rem; }
+
+.placeholder-state {
+    background: #fff;
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    padding: 4rem 2rem;
+    text-align: center;
+}
+
+.placeholder-icon {
+    font-size: 3.5rem;
+    margin-bottom: 1rem;
+    display: block;
+}
+
+.placeholder-state h3 {
+    font-family: var(--font-display);
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: var(--ink);
+    margin-bottom: .5rem;
+}
+
+.placeholder-state p { color: var(--muted); font-size: .9rem; }
+
+/* ── Summary Bar ─────────────────────────────────────── */
+.summary-bar {
+    background: #fff;
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    padding: 1.25rem 1.5rem;
+    display: flex;
+    align-items: center;
+    gap: 1.5rem;
+    flex-wrap: wrap;
+}
+
+.summary-name {
+    flex: 1;
+    min-width: 0;
+}
+
+.summary-name h3 {
+    font-family: var(--font-display);
+    font-size: 1.1rem;
+    font-weight: 700;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+
+.summary-name p { font-size: .82rem; color: var(--muted); }
+
+.summary-stats { display: flex; gap: 1rem; }
+
+.stat-pill {
+    display: flex; align-items: center; gap: .5rem;
+    padding: .45rem .9rem;
+    border-radius: 99px;
+    font-size: .82rem;
+    font-weight: 600;
+}
+
+.stat-pill.green { background: var(--teal-lt); color: var(--teal); }
+.stat-pill.red   { background: var(--red-lt);  color: var(--red);  }
+
+/* ── Section Heading ─────────────────────────────────── */
+.section-heading {
+    display: flex;
+    align-items: center;
+    gap: .75rem;
+    margin-bottom: .75rem;
+}
+
+.section-heading h4 {
+    font-family: var(--font-display);
+    font-size: .95rem;
+    font-weight: 700;
+    letter-spacing: .01em;
+}
+
+.section-heading .count-badge {
+    background: var(--ink);
+    color: #fff;
+    font-size: .72rem;
+    font-weight: 600;
+    padding: .15rem .55rem;
+    border-radius: 99px;
+}
+
+/* ── Scheme Cards ────────────────────────────────────── */
+.schemes-grid { display: flex; flex-direction: column; gap: .75rem; }
+
+.scheme-card {
+    background: #fff;
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    padding: 1.1rem 1.4rem;
+    border-left: 4px solid transparent;
+    transition: transform .2s, box-shadow .2s;
+    cursor: default;
+    position: relative;
+    overflow: hidden;
+}
+
+.scheme-card:hover { transform: translateY(-2px); box-shadow: 0 8px 32px rgba(10,10,15,.12); }
+
+.scheme-card.eligible   { border-left-color: var(--teal); }
+.scheme-card.ineligible { border-left-color: var(--border); opacity: .75; }
+
+.scheme-top {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 1rem;
+    margin-bottom: .6rem;
+}
+
+.scheme-name {
+    font-family: var(--font-display);
+    font-size: 1rem;
+    font-weight: 700;
+    line-height: 1.3;
+}
+
+.badge {
+    flex-shrink: 0;
+    font-size: .72rem;
+    font-weight: 600;
+    padding: .2rem .6rem;
+    border-radius: 99px;
+    white-space: nowrap;
+}
+
+.badge.eligible   { background: var(--teal-lt);  color: var(--teal); }
+.badge.ineligible { background: #f0ede8;          color: var(--muted); }
+
+.scheme-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: .4rem .9rem;
+    font-size: .78rem;
+    color: var(--muted);
+    margin-bottom: .5rem;
+}
+
+.scheme-meta span { display: flex; align-items: center; gap: .3rem; }
+
+.scheme-desc {
+    font-size: .85rem;
+    color: #4a4744;
+    line-height: 1.55;
+}
+
+.scheme-eligibility {
+    margin-top: .5rem;
+    font-size: .78rem;
+    color: var(--muted);
+    padding: .45rem .75rem;
+    background: var(--cream);
+    border-radius: 6px;
+    font-style: italic;
+}
+
+/* ── Loading Spinner ─────────────────────────────────── */
+.spinner {
+    display: none;
+    width: 18px; height: 18px;
+    border: 2.5px solid rgba(255,255,255,.35);
+    border-top-color: #fff;
+    border-radius: 50%;
+    animation: spin .6s linear infinite;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* ── Error Banner ────────────────────────────────────── */
+.error-banner {
+    display: none;
+    background: var(--red-lt);
+    color: var(--red);
+    border: 1px solid #f5c6c2;
+    border-radius: 8px;
+    padding: .8rem 1rem;
+    font-size: .88rem;
+    font-weight: 500;
+}
+
+/* ── Animations ──────────────────────────────────────── */
+@keyframes fadeUp {
+    from { opacity: 0; transform: translateY(16px); }
+    to   { opacity: 1; transform: translateY(0); }
+}
+
+.why-btn {
+    background: transparent;
+    border: 1px solid var(--border);
+    color: var(--ink);
+    padding: .3rem .7rem;
+    border-radius: 6px;
+    font-size: .8rem;
+    font-family: var(--font-body);
+    font-weight: 500;
+    cursor: pointer;
+    margin-top: .85rem;
+    display: inline-block;
+    transition: all 0.2s;
+}
+.why-btn:hover {
+    background: #fff;
+    border-color: var(--teal);
+    color: var(--teal);
+}
+.why-details {
+    display: none;
+    margin-top: .75rem;
+    padding-top: .75rem;
+    border-top: 1px dashed var(--border);
+    font-size: .82rem;
+}
+.why-details.open {
+    display: block;
+    animation: fadeUp 0.3s ease;
+}
+.why-rule {
+    display: flex;
+    align-items: flex-start;
+    gap: .5rem;
+    margin-bottom: .4rem;
+    line-height: 1.4;
+    color: var(--muted);
+}
+.why-rule:last-child { margin-bottom: 0; }
+.rule-icon { flex-shrink: 0; font-weight: bold; }
+.rule-pass { color: var(--teal); }
+.rule-fail { color: var(--red); }
+
+
+.fade-up { animation: fadeUp .4s ease both; }
+
+.scheme-card { animation: fadeUp .4s ease both; }
+.scheme-card:nth-child(2) { animation-delay: .05s; }
+.scheme-card:nth-child(3) { animation-delay: .10s; }
+.scheme-card:nth-child(4) { animation-delay: .15s; }
+.scheme-card:nth-child(5) { animation-delay: .20s; }
+.scheme-card:nth-child(6) { animation-delay: .25s; }
+</style>
+</head>
+<body>
+
+<!-- ── Header ────────────────────────────────────────────── -->
+<header>
+    <div class="logo">Yojana<span>Mitra</span></div>
+    <span class="header-tag">Government of India · Scheme Finder</span>
+</header>
+
+<!-- ── Hero ──────────────────────────────────────────────── -->
+<section class="hero">
+    <div class="hero-inner">
+        <span class="hero-tag">Powered by dataset</span>
+        <h1>Find every <em>scheme</em> you're eligible for</h1>
+        <p>Enter your details and instantly see which central government welfare schemes apply to you — no running around, no confusion.</p>
+    </div>
+</section>
+
+<!-- ── Main ──────────────────────────────────────────────── -->
+<main class="main-wrap">
+
+    <!-- FORM CARD -->
+    <aside class="form-card">
+        <div class="form-card-header">
+            <h2>Your Details</h2>
+            <p>All fields are required for accurate matching</p>
+        </div>
+        <div class="form-body">
+
+            <div>
+                <label for="name">Full Name</label>
+                <input id="name" type="text" placeholder="e.g. Ramesh Kumar" autocomplete="off" />
+            </div>
+
+            <div class="input-row">
+                <div>
+                    <label for="age">Age</label>
+                    <input id="age" type="number" min="1" max="120" placeholder="e.g. 35" />
+                </div>
+                <div>
+                    <label for="gender">Gender</label>
+                    <select id="gender">
+                        <option value="">Select…</option>
+                        <option>Male</option>
+                        <option>Female</option>
+                        <option>Other</option>
+                    </select>
+                </div>
+            </div>
+
+            <div>
+                <label for="occupation">Occupation</label>
+                <select id="occupation">
+                    <option value="">Select…</option>
+                    <option>Farmer</option>
+                    <option>Student</option>
+                    <option>Daily Wage Worker</option>
+                    <option>Self-employed</option>
+                    <option>Salaried Employee</option>
+                    <option>Business Owner</option>
+                    <option>Unemployed</option>
+                    <option>Homemaker</option>
+                    <option>Retired</option>
+                </select>
+            </div>
+
+            <div class="input-row">
+                <div>
+                    <label for="caste_category">Caste Category</label>
+                    <select id="caste_category">
+                        <option value="">Select…</option>
+                        <option value="General">General</option>
+                        <option value="SC">SC</option>
+                        <option value="ST">ST</option>
+                        <option value="OBC">OBC</option>
+                    </select>
+                </div>
+                <div>
+                    <label for="income">Yearly Income (₹)</label>
+                    <input id="income" type="number" min="0" placeholder="e.g. 80000" />
+                </div>
+            </div>
+
+            <div id="student-class-group" style="display: none;">
+                <label for="student_class">Class / Education Level</label>
+                <select id="student_class">
+                    <option value="">Select…</option>
+                    <option value="1">Class 1</option>
+                    <option value="2">Class 2</option>
+                    <option value="3">Class 3</option>
+                    <option value="4">Class 4</option>
+                    <option value="5">Class 5</option>
+                    <option value="6">Class 6</option>
+                    <option value="7">Class 7</option>
+                    <option value="8">Class 8</option>
+                    <option value="9">Class 9</option>
+                    <option value="10">Class 10</option>
+                    <option value="11">Class 11</option>
+                    <option value="12">Class 12</option>
+                    <option value="UG">Undergraduate (UG)</option>
+                    <option value="PG">Postgraduate (PG)</option>
+                    <option value="Post-Matric">Post-Matric (Other)</option>
+                </select>
+            </div>
+
+            <div id="error-banner" class="error-banner"></div>
+
+            <button class="submit-btn" id="check-btn" onclick="checkEligibility()">
+                <span id="btn-label">Check Eligibility</span>
+                <div class="spinner" id="spinner"></div>
+            </button>
+        </div>
+    </aside>
+
+    <!-- RESULTS PANEL -->
+    <section class="results-panel" id="results-panel">
+        <div class="placeholder-state" id="placeholder">
+            <h3>Ready to search</h3>
+            <p>Fill in your details on the left and hit <strong>Check Eligibility</strong> to see matching government schemes.</p>
+        </div>
+    </section>
+
+</main>
+
+<script>
+// ── Config ────────────────────────────────────────────────
+const API = '/api';
+
+// ── Helpers ───────────────────────────────────────────────
+const $  = id => document.getElementById(id);
+const qs = s  => document.querySelector(s);
+
+function showError(msg) {
+    const el = $('error-banner');
+    el.textContent = msg;
+    el.style.display = 'block';
+}
+
+function clearError() {
+    const el = $('error-banner');
+    el.textContent = '';
+    el.style.display = 'none';
+}
+
+function setLoading(on) {
+    const btn     = $('check-btn');
+    const label   = $('btn-label');
+    const spinner = $('spinner');
+    btn.disabled      = on;
+    label.textContent = on ? 'Checking…' : 'Check Eligibility';
+    spinner.style.display = on ? 'block' : 'none';
+}
+
+// ── Render Results ─────────────────────────────────────────
+function renderResults(data) {
+    const panel = $('results-panel');
+    panel.innerHTML = '';
+
+    // Summary bar
+    const bar = document.createElement('div');
+    bar.className = 'summary-bar fade-up';
+    bar.innerHTML = `
+        <div class="summary-name">
+            <h3>${data.applicant.name}</h3>
+            <p>${data.applicant.age} yrs · ${data.applicant.gender} · ${data.applicant.occupation} · ₹${Number(data.applicant.yearly_income).toLocaleString('en-IN')}/yr</p>
+        </div>
+        <div class="summary-stats">
+            <div class="stat-pill green">${data.summary.eligible} Eligible</div>
+            <div class="stat-pill red">${data.summary.ineligible} Not Eligible</div>
+        </div>
+    `;
+    panel.appendChild(bar);
+
+    // Eligible schemes
+    if (data.eligible_schemes.length) {
+        const sec = document.createElement('div');
+        sec.innerHTML = `
+            <div class="section-heading">
+                <h4>Eligible Schemes</h4>
+                <span class="count-badge">${data.eligible_schemes.length}</span>
+            </div>
+            <div class="schemes-grid" id="eligible-grid"></div>
+        `;
+        panel.appendChild(sec);
+        const grid = sec.querySelector('#eligible-grid');
+        data.eligible_schemes.forEach(s => grid.appendChild(schemeCard(s, true)));
+    }
+
+    // Ineligible schemes
+    if (data.ineligible_schemes.length) {
+        const sec = document.createElement('div');
+        sec.innerHTML = `
+            <div class="section-heading" style="margin-top:1rem;">
+                <h4 style="color:var(--muted);">Other Schemes (Not Matched)</h4>
+                <span class="count-badge" style="background:var(--muted);">${data.ineligible_schemes.length}</span>
+            </div>
+            <div class="schemes-grid" id="ineligible-grid"></div>
+        `;
+        panel.appendChild(sec);
+        const grid = sec.querySelector('#ineligible-grid');
+        data.ineligible_schemes.forEach(s => grid.appendChild(schemeCard(s, false)));
+    }
+}
+
+function formatRule(rule) {
+    const fieldMap = {
+        'occupation': 'Occupation',
+        'age': 'Age',
+        'gender': 'Gender',
+        'yearly_income': 'Yearly Income',
+        'target_group': 'Target Group'
+    };
+    const opMap = {
+        'eq': 'must be',
+        'neq': 'must not be',
+        'lt': 'must be less than',
+        'lte': 'must be at most',
+        'gt': 'must be greater than',
+        'gte': 'must be at least',
+        'in': 'must be one of',
+        'contains': 'must contain'
+    };
+    const fName = fieldMap[rule.field] || rule.field;
+    const opName = opMap[rule.operator] || rule.operator;
+    let val = rule.value;
+    if (rule.field === 'yearly_income') val = '₹' + Number(val).toLocaleString('en-IN');
+    let act = rule.actual_value;
+    if (rule.field === 'yearly_income' && act !== undefined) act = '₹' + Number(act).toLocaleString('en-IN');
+    
+    return `<strong>${fName}</strong> ${opName} <strong>${val}</strong> <em>(You have ${act})</em>`;
+}
+
+function schemeCard(scheme, eligible) {
+    const card = document.createElement('div');
+    card.className = `scheme-card ${eligible ? 'eligible' : 'ineligible'}`;
+
+    let rulesHtml = '';
+    if (scheme.rule_evaluations && scheme.rule_evaluations.length > 0) {
+        rulesHtml = scheme.rule_evaluations.map(r => `
+            <div class="why-rule">
+                <span class="rule-icon ${r.passed ? 'rule-pass' : 'rule-fail'}">${r.passed ? '✓' : '✗'}</span>
+                <span>${formatRule(r)}</span>
+            </div>
+        `).join('');
+    } else {
+        rulesHtml = '<div class="why-rule"><span class="rule-icon rule-fail">✗</span><span>No rules mapped.</span></div>';
+    }
+
+    card.innerHTML = `
+        <div class="scheme-top">
+            <div class="scheme-name">${scheme.name}</div>
+            <span class="badge ${eligible ? 'eligible' : 'ineligible'}">
+                ${eligible ? 'Eligible' : 'Not Matched'}
+            </span>
+        </div>
+        <div class="scheme-meta">
+            <span>${scheme.category}</span>
+            <span>${scheme.ministry}</span>
+            <span>${scheme.target_group}</span>
+        </div>
+        <div class="scheme-desc">${scheme.description}</div>
+        <div class="scheme-eligibility">Criteria: ${scheme.eligibility}</div>
+        
+        <button class="why-btn" onclick="this.nextElementSibling.classList.toggle('open')">Why am I ${eligible ? 'eligible' : 'not eligible'}?</button>
+        <div class="why-details">
+            ${rulesHtml}
+        </div>
+    `;
+    return card;
+}
+
+// ── Main Check ─────────────────────────────────────────────
+async function checkEligibility() {
+    clearError();
+
+    const name    = $('name').value.trim();
+    const age     = $('age').value.trim();
+    const gender  = $('gender').value;
+    const occ     = $('occupation').value;
+    const caste   = $('caste_category').value;
+    const sclass  = $('student_class').value;
+    const income  = $('income').value.trim();
+
+    // Client-side quick validation
+    if (!name || !age || !gender || !occ || !caste || income === '') {
+        showError('Please fill in all general fields before checking.');
+        return;
+    }
+    if (occ === 'Student' && !sclass) {
+        showError('Please select your Class / Education Level.');
+        return;
+    }
+
+    setLoading(true);
+
+    try {
+        const res = await fetch(`${API}/check`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                name, age: parseInt(age), gender,
+                occupation: occ, yearly_income: parseFloat(income),
+                caste_category: caste, student_class: occ === 'Student' ? sclass : null
+            })
+        });
+
+        const data = await res.json();
+
+        if (!res.ok) {
+            showError(data.errors ? data.errors.join(' · ') : 'Server error. Please try again.');
+            return;
+        }
+
+        renderResults(data);
+        document.querySelector('.results-panel').scrollIntoView({ behavior: 'smooth', block: 'start' });
+
+    } catch (err) {
+        showError('Could not reach the server. Make sure the backend is running on port 3001.');
+    } finally {
+        setLoading(false);
+    }
+}
+
+// Allow Enter key to submit
+document.addEventListener('keydown', e => {
+    if (e.key === 'Enter') checkEligibility();
+});
+
+// ── Custom Select Initialization ──────────────────────────
+function initCustomSelects() {
+    const selects = document.querySelectorAll('select');
+    selects.forEach(select => {
+        const wrapper = document.createElement('div');
+        wrapper.className = 'custom-select-wrapper';
+        select.parentNode.insertBefore(wrapper, select);
+        wrapper.appendChild(select);
+        
+        const trigger = document.createElement('div');
+        trigger.className = 'custom-select-trigger';
+        if (select.value) trigger.classList.add('has-value');
+        
+        const spanText = document.createElement('span');
+        spanText.textContent = select.options[select.selectedIndex].text;
+        
+        const arrow = document.createElement('div');
+        arrow.className = 'custom-arrow';
+        
+        trigger.appendChild(spanText);
+        trigger.appendChild(arrow);
+        
+        const optionsList = document.createElement('div');
+        optionsList.className = 'custom-options';
+        
+        Array.from(select.options).forEach(option => {
+            const optDiv = document.createElement('span');
+            optDiv.className = 'custom-option';
+            if (option.value === select.value) optDiv.classList.add('selected');
+            optDiv.textContent = option.text;
+            optDiv.dataset.value = option.value;
+            
+            optDiv.addEventListener('click', (e) => {
+                e.stopPropagation();
+                select.value = option.value;
+                spanText.textContent = option.text;
+                
+                if (option.value) {
+                    trigger.classList.add('has-value');
+                } else {
+                    trigger.classList.remove('has-value');
+                }
+                
+                wrapper.classList.remove('open');
+                
+                Array.from(optionsList.children).forEach(c => c.classList.remove('selected'));
+                optDiv.classList.add('selected');
+                select.dispatchEvent(new Event('change'));
+            });
+            optionsList.appendChild(optDiv);
+        });
+        
+        trigger.addEventListener('click', (e) => {
+            e.stopPropagation();
+            const isOpen = wrapper.classList.contains('open');
+            document.querySelectorAll('.custom-select-wrapper').forEach(w => w.classList.remove('open'));
+            if (!isOpen) wrapper.classList.add('open');
+        });
+        
+        wrapper.appendChild(trigger);
+        wrapper.appendChild(optionsList);
+    });
+    
+    document.addEventListener('click', () => {
+        document.querySelectorAll('.custom-select-wrapper').forEach(w => w.classList.remove('open'));
+    });
+}
+initCustomSelects();
+
+// Conditional Student Class Field
+$('occupation').addEventListener('change', (e) => {
+    const isStudent = e.target.value === 'Student';
+    const group = $('student-class-group');
+    group.style.display = isStudent ? 'block' : 'none';
+    if (!isStudent) {
+        const select = $('student_class');
+        select.value = '';
+        const wrapper = select.closest('.custom-select-wrapper');
+        const trigger = wrapper.querySelector('.custom-select-trigger');
+        trigger.classList.remove('has-value');
+        trigger.querySelector('span').textContent = select.options[0].text;
+        wrapper.querySelectorAll('.custom-option').forEach(c => c.classList.remove('selected'));
+        const emptyOpt = wrapper.querySelector('.custom-option[data-value=""]');
+        if (emptyOpt) emptyOpt.classList.add('selected');
+    }
+});
+</script>
+</body>
+</html>
