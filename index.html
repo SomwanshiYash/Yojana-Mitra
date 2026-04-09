@@ -837,18 +837,18 @@ function schemeCard(scheme, eligible) {
 
     card.innerHTML = `
         <div class="scheme-top">
-            <div class="scheme-name">${scheme.name}</div>
+            <div class="scheme-name">${scheme.name || scheme.scheme_name || scheme.scheme_n || 'Unknown Scheme'}</div>
             <span class="badge ${eligible ? 'eligible' : 'ineligible'}">
                 ${eligible ? 'Eligible' : 'Not Matched'}
             </span>
         </div>
         <div class="scheme-meta">
-            <span>${scheme.category}</span>
-            <span>${scheme.ministry}</span>
-            <span>${scheme.target_group}</span>
+            <span>${scheme.category || 'General'}</span>
+            ${scheme.ministry && scheme.ministry !== 'NULL' ? `<span>${scheme.ministry}</span>` : ''}
+            <span>${scheme.target_group || 'All'}</span>
         </div>
-        <div class="scheme-desc">${scheme.description}</div>
-        <div class="scheme-eligibility">Criteria: ${scheme.eligibility}</div>
+        <div class="scheme-desc">${scheme.description || ''}</div>
+        <div class="scheme-eligibility">Criteria: ${scheme.eligibility || 'None specified'}</div>
         
         <button class="why-btn" onclick="this.nextElementSibling.classList.toggle('open')">Why am I ${eligible ? 'eligible' : 'not eligible'}?</button>
         <div class="why-details">
