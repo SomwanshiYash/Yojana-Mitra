@@ -4,12 +4,12 @@
 -- ============================================================
 
 CREATE TABLE IF NOT EXISTS schemes (
-    id              INTEGER PRIMARY KEY AUTOINCREMENT,
+    id              INT AUTO_INCREMENT PRIMARY KEY,
     name            TEXT    NOT NULL,
     category        TEXT    NOT NULL,
     sub_category    TEXT,
     ministry        TEXT,
-    scheme_type     TEXT    DEFAULT 'Central',
+    scheme_type     VARCHAR(50) DEFAULT 'Central',
     target_group    TEXT    NOT NULL,
     eligibility     TEXT    NOT NULL,
     description     TEXT,
@@ -17,7 +17,7 @@ CREATE TABLE IF NOT EXISTS schemes (
 );
 
 CREATE TABLE IF NOT EXISTS eligibility_rules (
-    id              INTEGER PRIMARY KEY AUTOINCREMENT,
+    id              INT AUTO_INCREMENT PRIMARY KEY,
     scheme_id       INTEGER NOT NULL REFERENCES schemes(id) ON DELETE CASCADE,
     field           TEXT    NOT NULL,
     operator        TEXT    NOT NULL,
@@ -25,7 +25,7 @@ CREATE TABLE IF NOT EXISTS eligibility_rules (
 );
 
 CREATE TABLE IF NOT EXISTS applicants (
-    id              INTEGER PRIMARY KEY AUTOINCREMENT,
+    id              INT AUTO_INCREMENT PRIMARY KEY,
     name            TEXT    NOT NULL,
     age             INTEGER NOT NULL CHECK (age > 0 AND age < 130),
     gender          TEXT    NOT NULL CHECK (gender IN ('Male','Female','Other')),
@@ -37,7 +37,7 @@ CREATE TABLE IF NOT EXISTS applicants (
 );
 
 CREATE TABLE IF NOT EXISTS check_results (
-    id              INTEGER PRIMARY KEY AUTOINCREMENT,
+    id              INT AUTO_INCREMENT PRIMARY KEY,
     applicant_id    INTEGER NOT NULL REFERENCES applicants(id) ON DELETE CASCADE,
     scheme_id       INTEGER NOT NULL REFERENCES schemes(id)    ON DELETE CASCADE,
     is_eligible     INTEGER NOT NULL DEFAULT 0,
@@ -146,6 +146,8 @@ INSERT INTO schemes (id, name, category, target_group, eligibility, description)
 INSERT INTO schemes (id, name, category, target_group, eligibility, description) VALUES (91, 'National Scholarship Portal', 'Education', 'Student', 'Students at any level with family income below 2.5L registered on NSP', 'Central platform for multiple government scholarships for pre and post matric');
 INSERT INTO schemes (id, name, category, target_group, eligibility, description) VALUES (92, 'Eklavya Model Residential Schools', 'Education', 'Student', 'Scheduled Tribe children in blocks with over 50% ST population', 'Residential schooling for ST children with focus on tribal culture');
 INSERT INTO schemes (id, name, category, target_group, eligibility, description) VALUES (93, 'Pre-Matric Scholarship for Minorities', 'Education', 'Student', '', 'Scholarship for minority community stu');
+INSERT INTO schemes (id, name, category, target_group, eligibility, description) VALUES (94, 'YASH', 'Education', 'Student', 'Must be a student', 'YASH scheme for students');
+
 
 -- Eligibility Rules
 INSERT INTO eligibility_rules (scheme_id, field, operator, value) VALUES (1, 'age', 'gte', '18');
@@ -356,3 +358,5 @@ INSERT INTO eligibility_rules (scheme_id, field, operator, value) VALUES (92, 'o
 INSERT INTO eligibility_rules (scheme_id, field, operator, value) VALUES (92, 'caste_category', 'in', 'ST');
 INSERT INTO eligibility_rules (scheme_id, field, operator, value) VALUES (93, 'occupation', 'eq', 'Student');
 INSERT INTO eligibility_rules (scheme_id, field, operator, value) VALUES (93, 'yearly_income', 'lte', '100000');
+INSERT INTO eligibility_rules (scheme_id, field, operator, value) VALUES (94, 'occupation', 'eq', 'Student');
+
