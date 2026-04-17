@@ -44,9 +44,7 @@ CREATE TABLE IF NOT EXISTS check_results (
     checked_at      DATETIME DEFAULT CURRENT_TIMESTAMP
 );
 
-CREATE INDEX IF NOT EXISTS idx_rules_scheme   ON eligibility_rules(scheme_id);
-CREATE INDEX IF NOT EXISTS idx_results_app    ON check_results(applicant_id);
-CREATE INDEX IF NOT EXISTS idx_results_scheme ON check_results(scheme_id);
+-- Indexes removed for older MySQL compatibility
 
 
 -- Schemes
